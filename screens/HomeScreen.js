@@ -1,12 +1,16 @@
+// HomeScreen.js
 import React, { useEffect, useState } from 'react';
-import { View, FlatList, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
 import axios from 'axios';
 import Header from '../components/Header'; // Import your Header component
-import PostItem from '../components/PostItem'; // Import your PostItem component
-
+import SliderSection from '../components/home-layout/SliderSection'; // Import SliderSection
+import PostListSection from '../components/home-layout/PostListSection'; // Import PostListSection
+import ProductListSection from '../components/home-layout/ProductListSection'; // Import ProductListSection
+import ProductCategory from '../components/home-layout/ProductCategory';
 const HomeScreen = () => {
   const [posts, setPosts] = useState([]);
-
+  const [products, setProducts] = useState([]); // State to hold products data
+  
   useEffect(() => {
     axios
       .get('https://exotica-store-backend.vercel.app/api/posts')
@@ -16,17 +20,34 @@ const HomeScreen = () => {
       .catch((error) => {
         console.error('Error fetching posts', error);
       });
+
+    axios
+      .get('https://exotica-store-backend.vercel.app/api/products')
+      .then((response) => {
+        setProducts(response.data);
+      })
+      .catch((error) => {
+        console.error('Error fetching products', error);
+      });
   }, []);
 
   return (
-    <View style={styles.container}>
-      <Header title="Home" /> {/* Add the custom Header component here */}
-      <FlatList
-        data={posts}
-        keyExtractor={(item) => item._id}
-        renderItem={({ item }) => <PostItem item={item} />}
-      />
-    </View>
+    <ScrollView style={styles.container}>
+      <Header title="Home" /> {/* Custom Header */}
+      
+      {/* Slider Section */}
+      <SliderSection posts={posts} />
+
+      {/* Product Category Section */}
+      <ProductCategory />
+
+      {/* Products Section */}
+      <ProductListSection products={products} />
+
+      {/* Posts List Section */}
+      <PostListSection posts={posts} />
+
+    </ScrollView>
   );
 };
 
