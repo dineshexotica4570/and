@@ -5,6 +5,7 @@ import HomeScreen from './screens/HomeScreen';
 import AboutScreen from './screens/AboutScreen';
 import LoginScreen from './screens/LoginScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import ProductsScreen from './screens/ProductsScreen';
 
 const Tab = createBottomTabNavigator();
 

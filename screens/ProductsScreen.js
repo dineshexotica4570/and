@@ -2,12 +2,12 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Header from '../components/Header'; // Import your Header component
 
-const AboutScreen = () => {
+const ProductsScreen = () => {
   return (
     <View style={styles.container}>
       <Header /> {/* Add the custom Header component here */}
       <View style={styles.content}>
-        <Text style={styles.text}>This is the About screen.</Text>
+        <Text style={styles.text}>This is the Products screen.</Text>
       </View>
     </View>
   );
@@ -26,4 +26,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AboutScreen;
+export default ProductsScreen;

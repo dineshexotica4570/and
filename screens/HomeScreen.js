@@ -33,7 +33,7 @@ const HomeScreen = () => {
 
   return (
     <ScrollView style={styles.container}>
-      <Header title="Home" /> {/* Custom Header */}
+      <Header /> {/* Custom Header */}
       
       {/* Slider Section */}
       <SliderSection posts={posts} />
