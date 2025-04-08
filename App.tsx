@@ -1,24 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createStackNavigator } from '@react-navigation/stack';
 import HomeScreen from './screens/HomeScreen';
 import AboutScreen from './screens/AboutScreen';
 import LoginScreen from './screens/LoginScreen';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import ProductsScreen from './screens/ProductsScreen';
+import ProductDetailScreen from './screens/ProductDetailScreen'; // Import ProductDetailScreen
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  // Check session on app load
   useEffect(() => {
     const checkLoginStatus = async () => {
       try {
         const user = await AsyncStorage.getItem('user');
         if (user) {
-          setIsLoggedIn(true);  // User is logged in
+          setIsLoggedIn(true);
         }
       } catch (error) {
         console.log('Error checking login status:', error);
@@ -28,7 +30,6 @@ const App = () => {
     checkLoginStatus();
   }, []);
 
-  // Handle login
   const handleLogin = async (email, password) => {
     try {
       const response = await fetch('https://exotica-store-backend.vercel.app/login', {
@@ -40,10 +41,10 @@ const App = () => {
       });
 
       const data = await response.json();
-      
+
       if (data.userId) {
-        await AsyncStorage.setItem('user', JSON.stringify({ email, password }));  // Store user in AsyncStorage
-        setIsLoggedIn(true);  // Set logged in status
+        await AsyncStorage.setItem('user', JSON.stringify({ email, password }));
+        setIsLoggedIn(true);
       } else {
         alert('Invalid credentials');
       }
@@ -52,11 +53,10 @@ const App = () => {
     }
   };
 
-  // Handle logout
   const handleLogout = async () => {
     try {
-      await AsyncStorage.removeItem('user');  // Remove user from AsyncStorage
-      setIsLoggedIn(false);  // Reset logged-in status
+      await AsyncStorage.removeItem('user');
+      setIsLoggedIn(false);
     } catch (error) {
       console.log('Error logging out:', error);
     }
@@ -64,29 +64,65 @@ const App = () => {
 
   return (
     <NavigationContainer>
-      {!isLoggedIn ? (
-        <LoginScreen onLogin={handleLogin} />
-      ) : (
-        <Tab.Navigator
-          screenOptions={{
-            headerShown: false,
-          }}
-        >
-          <Tab.Screen name="Home">
-            {(props) => <HomeScreen {...props} />}
-          </Tab.Screen>
-          <Tab.Screen name="About">
-            {(props) => <AboutScreen {...props} />}
-          </Tab.Screen>
-          <Tab.Screen
-            name="Logout"
-            component={() => {
-              handleLogout();
-              return null; // Just logout and navigate back to LoginScreen
-            }}
-          />
-        </Tab.Navigator>
-      )}
+      <Stack.Navigator 
+      screenOptions={{
+      headerShown: false, // Hide header for the tab screens
+      }}>
+        {!isLoggedIn ? (
+          <Stack.Screen name="Login" component={LoginScreen} />
+        ) : (
+          <>
+            {/* Add BottomTabNavigator as a Screen inside the Stack */}
+            <Stack.Screen name="HomeTabs">
+              {() => (
+                <Tab.Navigator
+                  screenOptions={{
+                    headerShown: false, 
+                  }}
+                >
+                  {/* Tab Screens */}
+                  <Tab.Screen
+                    name="Home"
+                    component={HomeScreen}
+                  />
+
+                  {/* Shop tab that includes Stack navigation */}
+                  <Tab.Screen
+                    name="Shop"
+                  >
+                    {() => (
+                      <Stack.Navigator
+                        screenOptions={{
+                          headerShown: false, 
+                        }}
+                      >
+                        <Stack.Screen name="Products" component={ProductsScreen} />
+                        <Stack.Screen name="ProductDetail" component={ProductDetailScreen} />
+                      </Stack.Navigator>
+                    )}
+                  </Tab.Screen>
+
+                  {/* Logout Tab */}
+                  <Tab.Screen
+                    name="Logout"
+                    component={() => {
+                      handleLogout();
+                      return null; // Just logout and navigate back to LoginScreen
+                    }}
+                  />
+                </Tab.Navigator>
+              )}
+            </Stack.Screen>
+
+            {/* This is where we add ProductDetailScreen as a global screen */}
+            <Stack.Screen
+              name="ProductDetail"
+              component={ProductDetailScreen}
+              options={{ headerShown: false }} 
+            />
+          </>
+        )}
+      </Stack.Navigator>
     </NavigationContainer>
   );
 };

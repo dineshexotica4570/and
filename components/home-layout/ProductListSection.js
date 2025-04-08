@@ -1,19 +1,25 @@
 // ProductListSection.js
 import React from 'react';
-import { View, FlatList, Image, Text, StyleSheet, Dimensions } from 'react-native';
+import { View, FlatList, Image, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native'; // Import useNavigation
 
 const { width } = Dimensions.get('window');
 
 const ProductListSection = ({ products }) => {
+  const navigation = useNavigation(); // Use the hook to access navigation
+
   const renderProductItem = (item) => (
-    <View style={styles.productItem}>
+    <TouchableOpacity
+      style={styles.productItem}
+      onPress={() => navigation.navigate('ProductDetail', { productId: item._id })} // Navigate to ProductDetail screen
+    >
       <Image
         source={{ uri: `https://exotica-store-backend.vercel.app/api/${item.image}` }}
         style={styles.productImage}
       />
       <Text style={styles.productName}>{item.name}</Text>
       <Text style={styles.productPrice}>${item.price}</Text>
-    </View>
+    </TouchableOpacity>
   );
 
   return (

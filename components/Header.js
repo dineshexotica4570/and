@@ -96,7 +96,7 @@ const Header = ({ title }) => {
         <TouchableOpacity onPress={() => navigateToScreen('Home')}>
           <Text style={styles.sidebarItem}>Home</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigateToScreen('Products')}>
+        <TouchableOpacity onPress={() => navigateToScreen('Shop')}>
           <Text style={styles.sidebarItem}>All Products</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => navigateToScreen('About')}>
