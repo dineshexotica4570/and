@@ -1,6 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  Image,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  ActivityIndicator,
+} from 'react-native';
+
 import { useNavigation } from '@react-navigation/native';
+import Header from '../components/Header'; // Import your Header component
 
 const ProductDetailScreen = ({ route }) => {
   const { productId } = route.params;
@@ -11,11 +21,11 @@ const ProductDetailScreen = ({ route }) => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await fetch(`https://exotica-store-backend.vercel.app/api/products/${productId}`);
-        const data = await response.json();
+        const res = await fetch(`https://exotica-store-backend.vercel.app/api/products/${productId}`);
+        const data = await res.json();
         setProduct(data);
-      } catch (error) {
-        console.log('Error fetching product:', error);
+      } catch (err) {
+        console.error('Error:', err);
       } finally {
         setLoading(false);
       }
@@ -24,126 +34,198 @@ const ProductDetailScreen = ({ route }) => {
     fetchProduct();
   }, [productId]);
 
-  if (loading) return <ActivityIndicator size="large" style={styles.loader} />;
-  if (!product) return <Text style={styles.error}>Product not found.</Text>;
+  if (loading) {
+    return (
+      <View style={styles.loader}>
+        <ActivityIndicator size="large" color="#000" />
+      </View>
+    );
+  }
+
+  if (!product) {
+    return (
+      <View style={styles.loader}>
+        <Text style={{ color: 'red' }}>Product not found.</Text>
+      </View>
+    );
+  }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      {/* Back Button */}
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-        <Text style={styles.backButtonText}>← Back</Text>
-      </TouchableOpacity>
-
-      {/* Product Image */}
-      <View style={styles.imageContainer}>
-        <Image
-          source={{ uri: `https://exotica-store-backend.vercel.app/api/${product.image}` }}
-          style={styles.image}
-        />
+    <ScrollView style={styles.container}>
+      {/* Header */}
+      <Header />
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Text size={28} color="#6200EE">Back</Text>
+        </TouchableOpacity>
+        <TouchableOpacity>
+        <Text size={28} color="#6200EE">Cart</Text>
+        </TouchableOpacity>
       </View>
 
-      {/* Product Details */}
-      <View style={styles.detailsContainer}>
+      {/* Product Image */}
+      <Image
+        source={{ uri: `https://exotica-store-backend.vercel.app/api/${product.image}` }}
+        style={styles.productImage}
+      />
+
+      {/* Details Section */}
+      <View style={styles.detailsSection}>
+        {/* Product Name */}
         <Text style={styles.productName}>{product.name}</Text>
-        <Text style={styles.productPrice}>${product.price}</Text>
-        <Text style={styles.productDescription}>{product.description}</Text>
+
+        {/* Rating */}
+        <View style={styles.ratingRow}>
+          <Text style={styles.stars}>★★★★★</Text>
+          <Text style={styles.ratingText}>(4.9)</Text>
+        </View>
+
+        {/* Colors */}
+        <View style={styles.colorPicker}>
+          {['#000', '#aaa', '#fff', '#fcbcd9', '#f4edea'].map((clr, i) => (
+            <View
+              key={i}
+              style={[styles.colorDot, { backgroundColor: clr }]}
+            />
+          ))}
+        </View>
+
+        {/* Price */}
+        <Text style={styles.price}>${product.price}</Text>
+
+        {/* Sizes */}
+        <Text style={styles.label}>Select Size</Text>
+        <View style={styles.sizePicker}>
+          {['XS', 'S', 'M', 'L', 'XL'].map((size) => (
+            <View key={size} style={styles.sizeBox}>
+              <Text style={styles.sizeText}>{size}</Text>
+            </View>
+          ))}
+        </View>
 
         {/* Add to Cart Button */}
-        <TouchableOpacity style={styles.addToCartButton}>
-          <Text style={styles.addToCartButtonText}>Add to Cart</Text>
+        <TouchableOpacity style={styles.addToCartBtn}>
+          <Text style={styles.addToCartText}>Add to Cart</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
   );
 };
 
+export default ProductDetailScreen;
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F4F7FC',
-    paddingTop: 50,
-    paddingHorizontal: 20,
+    backgroundColor: '#fff',
   },
   loader: {
     flex: 1,
     justifyContent: 'center',
-    marginTop: 50,
-  },
-  error: {
-    fontSize: 18,
-    color: 'red',
-    textAlign: 'center',
-    marginTop: 20,
-  },
-  backButton: {
-    position: 'absolute',
-    top: 40,
-    left: 20,
-    padding: 12,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    borderRadius: 50,
-    zIndex: 1,
-  },
-  backButtonText: {
-    fontSize: 20,
-    color: 'white',
-  },
-  imageContainer: {
     alignItems: 'center',
-    marginBottom: 25,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
   },
-  image: {
-    width: 350,
-    height: 350,
-    borderRadius: 20,
-    resizeMode: 'cover',
-  },
-  detailsContainer: {
-    backgroundColor: '#FFF',
+
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     padding: 20,
-    borderRadius: 25,
-    marginTop: -20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.2,
-    shadowRadius: 15,
-    elevation: 8,
+    marginTop: 40,
   },
+
+  productImage: {
+    width: '100%',
+    height: 400,
+    resizeMode: 'cover',
+    borderBottomLeftRadius: 40,
+    borderBottomRightRadius: 40,
+  },
+
+  detailsSection: {
+    marginTop: -30,
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    padding: 25,
+  },
+
   productName: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#333',
-    marginBottom: 10,
-  },
-  productPrice: {
     fontSize: 24,
-    color: '#6200EE',
-    fontWeight: '600',
+    fontWeight: 'bold',
+    color: '#111',
+    marginBottom: 8,
+  },
+
+  ratingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 15,
   },
-  productDescription: {
-    fontSize: 16,
+  stars: {
+    color: '#FFA800',
+    fontSize: 18,
+  },
+  ratingText: {
+    marginLeft: 6,
+    fontSize: 14,
     color: '#666',
-    lineHeight: 24,
+  },
+
+  colorPicker: {
+    flexDirection: 'row',
+    gap: 10,
     marginBottom: 20,
   },
-  addToCartButton: {
+
+  colorDot: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+
+  price: {
+    fontSize: 26,
+    fontWeight: '700',
+    color: '#6200EE',
+    marginVertical: 15,
+  },
+
+  label: {
+    fontSize: 14,
+    color: '#777',
+    marginBottom: 8,
+  },
+
+  sizePicker: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 30,
+  },
+
+  sizeBox: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+  },
+
+  sizeText: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+
+  addToCartBtn: {
     backgroundColor: '#6200EE',
     paddingVertical: 15,
-    borderRadius: 10,
+    borderRadius: 30,
     alignItems: 'center',
-    marginTop: 15,
   },
-  addToCartButtonText: {
-    fontSize: 18,
-    color: 'white',
+
+  addToCartText: {
+    color: '#fff',
+    fontSize: 16,
     fontWeight: '600',
   },
 });
-
-export default ProductDetailScreen;
