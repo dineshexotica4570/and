@@ -8,17 +8,19 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
-
 import { useNavigation } from '@react-navigation/native';
-import Header from '../components/Header'; // Import your Header component
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage
+import Header from '../components/Header';
 
 const ProductDetailScreen = ({ route }) => {
   const { productId } = route.params;
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [cartItemCount, setCartItemCount] = useState(0); // To store cart item count
   const navigation = useNavigation();
 
   useEffect(() => {
+    // Fetch product details
     const fetchProduct = async () => {
       try {
         const res = await fetch(`https://exotica-store-backend.vercel.app/api/products/${productId}`);
@@ -31,8 +33,35 @@ const ProductDetailScreen = ({ route }) => {
       }
     };
 
+    // Fetch cart item count
+    const fetchCartItemCount = async () => {
+      try {
+        const cartData = await AsyncStorage.getItem('cart');
+        const cart = cartData ? JSON.parse(cartData) : [];
+        const itemCount = cart.reduce((total, item) => total + item.quantity, 0);
+        setCartItemCount(itemCount);
+      } catch (err) {
+        console.error('Error fetching cart item count:', err);
+      }
+    };
+
     fetchProduct();
+    fetchCartItemCount();
   }, [productId]);
+
+  // Add product to cart
+  const addToCart = async () => {
+    try {
+      const cartData = await AsyncStorage.getItem('cart');
+      const cart = cartData ? JSON.parse(cartData) : [];
+      cart.push(product);
+      await AsyncStorage.setItem('cart', JSON.stringify(cart));
+      alert('Product added to cart!');
+      fetchCartItemCount(); // Re-fetch the cart item count after adding the product
+    } catch (err) {
+      console.error('Error adding to cart:', err);
+    }
+  };
 
   if (loading) {
     return (
@@ -52,59 +81,32 @@ const ProductDetailScreen = ({ route }) => {
 
   return (
     <ScrollView style={styles.container}>
-      {/* Header */}
       <Header />
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text size={28} color="#6200EE">Back</Text>
+          <Text style={styles.cartText}>Back</Text>
         </TouchableOpacity>
-        <TouchableOpacity>
-        <Text size={28} color="#6200EE">Cart</Text>
+        <TouchableOpacity onPress={() => navigation.navigate('Cart')}>
+          <Text style={styles.cartText}>
+            Cart ({cartItemCount}) {/* Display cart item count */}
+          </Text>
         </TouchableOpacity>
       </View>
 
-      {/* Product Image */}
       <Image
         source={{ uri: `https://exotica-store-backend.vercel.app/api/${product.image}` }}
         style={styles.productImage}
       />
 
-      {/* Details Section */}
       <View style={styles.detailsSection}>
-        {/* Product Name */}
         <Text style={styles.productName}>{product.name}</Text>
-
-        {/* Rating */}
+        <Text style={styles.description}>{product.description}</Text>
         <View style={styles.ratingRow}>
           <Text style={styles.stars}>★★★★★</Text>
           <Text style={styles.ratingText}>(4.9)</Text>
         </View>
-
-        {/* Colors */}
-        <View style={styles.colorPicker}>
-          {['#000', '#aaa', '#fff', '#fcbcd9', '#f4edea'].map((clr, i) => (
-            <View
-              key={i}
-              style={[styles.colorDot, { backgroundColor: clr }]}
-            />
-          ))}
-        </View>
-
-        {/* Price */}
         <Text style={styles.price}>${product.price}</Text>
-
-        {/* Sizes */}
-        <Text style={styles.label}>Select Size</Text>
-        <View style={styles.sizePicker}>
-          {['XS', 'S', 'M', 'L', 'XL'].map((size) => (
-            <View key={size} style={styles.sizeBox}>
-              <Text style={styles.sizeText}>{size}</Text>
-            </View>
-          ))}
-        </View>
-
-        {/* Add to Cart Button */}
-        <TouchableOpacity style={styles.addToCartBtn}>
+        <TouchableOpacity style={styles.addToCartBtn} onPress={addToCart}>
           <Text style={styles.addToCartText}>Add to Cart</Text>
         </TouchableOpacity>
       </View>
@@ -132,6 +134,12 @@ const styles = StyleSheet.create({
     marginTop: 40,
   },
 
+  cartText: {
+    fontSize: 18,
+    color: '#6200EE',
+    fontWeight: '600',
+  },
+
   productImage: {
     width: '100%',
     height: 400,
@@ -149,12 +157,16 @@ const styles = StyleSheet.create({
   },
 
   productName: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#111',
     marginBottom: 8,
   },
-
+  description: {
+    fontSize: 16,
+    color: '#111',
+    marginBottom: 8,
+  },
   ratingRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -170,50 +182,11 @@ const styles = StyleSheet.create({
     color: '#666',
   },
 
-  colorPicker: {
-    flexDirection: 'row',
-    gap: 10,
-    marginBottom: 20,
-  },
-
-  colorDot: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: '#ddd',
-  },
-
   price: {
     fontSize: 26,
     fontWeight: '700',
     color: '#6200EE',
     marginVertical: 15,
-  },
-
-  label: {
-    fontSize: 14,
-    color: '#777',
-    marginBottom: 8,
-  },
-
-  sizePicker: {
-    flexDirection: 'row',
-    gap: 10,
-    marginBottom: 30,
-  },
-
-  sizeBox: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-  },
-
-  sizeText: {
-    fontSize: 14,
-    fontWeight: '500',
   },
 
   addToCartBtn: {

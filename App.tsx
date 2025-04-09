@@ -8,6 +8,7 @@ import LoginScreen from './screens/LoginScreen';
 import ProductsScreen from './screens/ProductsScreen';
 import ProductDetailScreen from './screens/ProductDetailScreen'; // Import ProductDetailScreen
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import CartScreen from './screens/CartScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -98,6 +99,7 @@ const App = () => {
                       >
                         <Stack.Screen name="Products" component={ProductsScreen} />
                         <Stack.Screen name="ProductDetail" component={ProductDetailScreen} />
+                        <Stack.Screen name="Cart" component={CartScreen} />
                       </Stack.Navigator>
                     )}
                   </Tab.Screen>
@@ -115,6 +117,11 @@ const App = () => {
             </Stack.Screen>
 
             {/* This is where we add ProductDetailScreen as a global screen */}
+            <Stack.Screen
+              name="Cart"
+              component={CartScreen}
+              options={{ headerShown: false }} 
+            />
             <Stack.Screen
               name="ProductDetail"
               component={ProductDetailScreen}
